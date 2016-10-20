@@ -776,4 +776,123 @@ public class AS3Printer extends DefaultJavaPrettyPrinter {
     write("*/ ");
     scan(synchro.getBlock());
   }
+
+
+    private void writeEnumField(CtField<?> f, int n) {
+        this.write("public static const ");
+        this.write(f.getSimpleName());
+        this.write(": int = ");
+        this.write(String.valueOf(n));
+        this.write(";");
+        this.writeln();
+    }
+
+    public <T extends Enum<?>> void visitCtEnum(CtEnum<T> ctEnum) {
+        this.write("public class " + ctEnum.getSimpleName());
+        if(ctEnum.getSuperInterfaces().size() > 0) {
+            this.write(" implements ");
+            Iterator l1 = ctEnum.getSuperInterfaces().iterator();
+
+            while(l1.hasNext()) {
+                CtTypeReference l2 = (CtTypeReference)l1.next();
+                this.scan((CtReference)l2);
+                this.write(" , ");
+            }
+
+            this.removeLastChar();
+        }
+
+        this.write(" {").incTab().writeln();
+        ArrayList l11 = new ArrayList();
+        ArrayList l21 = new ArrayList();
+        Iterator i$ = ctEnum.getFields().iterator();
+
+        CtField c;
+        while(i$.hasNext()) {
+            c = (CtField)i$.next();
+            if(c.getType() == null) {
+                l11.add(c);
+            } else {
+                l21.add(c);
+            }
+        }
+
+        if(l11.size() > 0) {
+            i$ = l11.iterator();
+            int n = 0;
+
+            while(i$.hasNext()) {
+                c = (CtField)i$.next();
+                this.writeEnumField(c,n++);
+            }
+
+        }
+
+        i$ = l21.iterator();
+
+        while(i$.hasNext()) {
+            c = (CtField)i$.next();
+            this.writeln().scan((CtElement)c);
+        }
+
+        i$ = ctEnum.getConstructors().iterator();
+
+        while(i$.hasNext()) {
+            CtConstructor c1 = (CtConstructor)i$.next();
+            if(!c1.isImplicit()) {
+                this.writeln().scan((CtElement)c1);
+            }
+        }
+
+        this.writeln();
+        this.write("public static function valueOf(name:String):int {");
+        this.incTab();
+
+        if(l11.size() > 0) {
+            i$ = l11.iterator();
+
+            while(i$.hasNext()) {
+                c = (CtField)i$.next();
+                this.writeln();
+                this.write("if (name==\""+c.getSimpleName()+"\") return "+c.getSimpleName()+";");
+            }
+
+        }
+        this.writeln().write("return 0;");
+        this.decTab();
+
+
+        this.writeln().write("};").writeln();
+
+        this.writeln();
+        this.write("private var mType:int;").writeln();
+
+        this.write("public function "+ctEnum.getSimpleName()+"(type:int = 0) {");
+        this.incTab();
+        this.writeln().write("mType = type;");
+        this.decTab();
+        this.writeln().write("}").writeln();
+
+        this.writeln().write("public function toString():String {");
+        this.incTab();
+        this.writeln().write("switch (mType) {");
+        this.incTab();
+
+        if(l11.size() > 0) {
+            i$ = l11.iterator();
+
+            while(i$.hasNext()) {
+                c = (CtField)i$.next();
+                this.writeln();
+                this.write("case "+c.getSimpleName()+": return \""+c.getSimpleName()+"\"; break;");
+            }
+
+        }
+        this.decTab();
+        this.writeln().write("}").writeln();
+        this.write("return null;");
+        this.decTab().writeln().write("}");
+        this.decTab().writeln().write("}");
+    }
+
 }
