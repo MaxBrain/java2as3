@@ -39,4 +39,8 @@ class StringTests
 	{
 		return new StringBuilder();
 	}
+
+	static String integer(int i) {
+		return String.valueOf(i);
+	}
 }

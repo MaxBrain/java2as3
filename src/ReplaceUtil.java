@@ -105,6 +105,7 @@ public class ReplaceUtil
     methodsMap.put("java.lang.StringBuilder.toString", "");
     methodsMap.put("java.lang.String.equals", " == ");
     methodsMap.put("java.util.ArrayList.add", "push");
+    methodsMap.put("java.lang.String.valueOf", "String");
   }
 
   static CtTypeReference<?> replaceType(CtTypeReference<?> t)
